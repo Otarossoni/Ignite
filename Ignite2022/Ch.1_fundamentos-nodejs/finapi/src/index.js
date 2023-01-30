@@ -37,6 +37,7 @@ function getBalance(statement) {
   return balance;
 }
 
+// Rota para criação de conta
 app.post("/account", (request, response) => {
   // Busca os parametros da requisição
   const { cpf, name } = request.body;
@@ -58,11 +59,13 @@ app.post("/account", (request, response) => {
   return response.status(201).send();
 });
 
-app.get("/statement/:cpf", verifyIfExistsAccountCPF, (request, response) => {
+// Rota para ver movimentações de conta específica
+app.get("/statement", verifyIfExistsAccountCPF, (request, response) => {
   const { customer } = request;
   return response.status(200).json(customer.statement);
 });
 
+// Rota para depositar valor em uma conta
 app.post("/deposit", verifyIfExistsAccountCPF, (request, response) => {
   const { description, amount } = request.body;
 
@@ -80,6 +83,7 @@ app.post("/deposit", verifyIfExistsAccountCPF, (request, response) => {
   return response.status(201).send();
 });
 
+// Rota para sacar valor de uma conta
 app.post("/withdraw", verifyIfExistsAccountCPF, (request, response) => {
   const { amount } = request.body;
   const { customer } = request;
@@ -99,6 +103,53 @@ app.post("/withdraw", verifyIfExistsAccountCPF, (request, response) => {
   customer.statement.push(statementOperation);
 
   return response.status(201).send();
+});
+
+// Rota para obter movimnetações por data
+app.get("/statement/date", verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request;
+  const { date } = request.query;
+
+  const dateFormat = new Date(date + " 00:00");
+
+  const statement = customer.statement.filter((statement) => {
+    statement.created_at.toDateString() === new Date(dateFormat).toDateString();
+  });
+
+  return response.json(statement);
+});
+
+// Rota para atualizar uma conta
+app.put("/account", verifyIfExistsAccountCPF, (request, response) => {
+  const { name } = request.body;
+  const { customer } = request;
+
+  customer.name = name;
+
+  return response.status(201).send();
+});
+
+// Rota para obter os dados da conta
+app.get("/account", verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request;
+  return response.json(customer);
+});
+
+// Rota para deletar uma conta
+app.delete("/account", verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request;
+
+  customers.splice(customer, 1);
+
+  return response.status(200).json(customers);
+});
+
+// Rota para obter o balance de uma conta
+app.get("/balance", verifyIfExistsAccountCPF, (request, response) => {
+  const { customer } = request;
+  const balance = getBalance(customer.statement);
+
+  return response.json(balance);
 });
 
 // Porta na qual a aplicação estará rodando
