@@ -9,7 +9,7 @@ app.get('/', (request, response) => {
 });
 
 // Rotas de categorias
-app.use(categoriesRoutes);
+app.use('/categories', categoriesRoutes);
 
 // Abertura da porta da aplicação
 app.listen(3333, () => {
